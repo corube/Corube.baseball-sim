@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>本格対戦型野球シミュレーター v13.3</title>
+    <title>本格対戦型野球シミュレーター v13.3 (イニングスキップ機能追加)</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -304,8 +304,10 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
+        <div style="display:flex; justify-content:center; gap:10px; margin-top:20px; flex-wrap:wrap;">
             <button id="next-pitch-btn" onclick="stepPitch()">1球すすめる</button>
+            <button id="skip-7th-btn" class="btn-secondary" onclick="skipToInning(7)" style="background-color: #d35400;">7回まで飛ばす</button>
+            <button id="skip-8th-btn" class="btn-secondary" onclick="skipToInning(8)" style="background-color: #c0392b;">8回まで飛ばす</button>
             <button id="auto-game-btn" class="btn-secondary" onclick="autoPlayGame()">一気に結果を見る</button>
             <button id="reset-game-btn" class="btn-sm btn-secondary hidden" onclick="initGame()">もう一度プレイ</button>
         </div>
@@ -673,6 +675,8 @@ let currentPitcher = { home: null, away: null };
 function initGame() {
     document.getElementById('reset-game-btn').classList.add('hidden');
     document.getElementById('next-pitch-btn').disabled = false;
+    document.getElementById('skip-7th-btn').disabled = false;
+    document.getElementById('skip-8th-btn').disabled = false;
     document.getElementById('auto-game-btn').disabled = false;
 
     game = {
@@ -869,6 +873,8 @@ function endGame() {
     addLog(`\n🎉 【試合終了】 ${game.homeTeam.name} ${game.homeTotal} - ${game.awayTotal} ${game.awayTeam.name}`);
     document.getElementById('reset-game-btn').classList.remove('hidden');
     document.getElementById('next-pitch-btn').disabled = true;
+    document.getElementById('skip-7th-btn').disabled = true;
+    document.getElementById('skip-8th-btn').disabled = true;
     document.getElementById('auto-game-btn').disabled = true;
 }
 
@@ -887,6 +893,24 @@ function addLog(text) {
     const logDiv = document.getElementById('game-log'); logDiv.innerHTML += text + "<br>"; logDiv.scrollTop = logDiv.scrollHeight;
 }
 function autoPlayGame() { while (!game.gameOver) { stepPitch(); } }
+
+// 指定したイニング（の表）まで一気に試合を進める関数
+function skipToInning(targetInning) {
+    if (game.gameOver) return;
+    
+    // すでに指定イニングを超えている場合は何もしない
+    if (game.inning >= targetInning) {
+        alert(`すでに ${targetInning} 回以降、またはそのイニングの攻撃中・終了後です。`);
+        return;
+    }
+
+    addLog(`\n⏩ ${targetInning}回表まで試合をスキップします...`);
+    
+    // 指定イニングの「表」に到達する、もしくはゲームが終了するまでループ
+    while (!game.gameOver && !(game.inning === targetInning && game.isTop)) {
+        stepPitch();
+    }
+}
 
 function updateUI() {
     const header = document.getElementById('sb-header');
