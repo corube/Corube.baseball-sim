@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>本格対戦型野球シミュレーター v11</title>
+    <title>本格対戦型野球シミュレーター v12</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -246,7 +246,6 @@
 
 <div class="container">
     
-    <!-- 1. 打順編成・選手編集画面 -->
     <div id="screen-setup" class="box">
         <h2>チーム編成 & 選手能力編集</h2>
         
@@ -296,13 +295,11 @@
         </div>
     </div>
 
-    <!-- 2. リーグ戦メイン画面 -->
     <div id="screen-league" class="box hidden">
         <h2>🏆 リーグ戦モード</h2>
         <div class="info-box" id="league-progress-info" style="margin-bottom: 15px; background: #8e44ad;">第1節</div>
         
         <div class="league-layout">
-            <!-- 順位表 -->
             <div>
                 <h3>【現在の順位表】</h3>
                 <table>
@@ -317,7 +314,6 @@
                     <table id="league-matches-table" style="margin-bottom:0;"></table>
                 </div>
             </div>
-            <!-- リーグ戦ニュース・ログ -->
             <div>
                 <h3>【リーグ戦速報】</h3>
                 <div id="league-log" class="league-log-box"></div>
@@ -331,9 +327,7 @@
         </div>
     </div>
 
-    <!-- 3. 試合観戦画面 -->
     <div id="screen-game" class="box hidden">
-        <!-- スコアボード -->
         <table class="scoreboard-table">
             <thead><tr id="sb-header"></tr></thead>
             <tbody>
@@ -343,7 +337,6 @@
         </table>
 
         <div class="game-layout">
-            <!-- 左スタメン -->
             <div class="team-display">
                 <h4 style="margin:5px; text-align:center;" id="game-home-title">ホーム</h4>
                 <table>
@@ -358,7 +351,6 @@
                 </div>
             </div>
 
-            <!-- 中央：速報・グラウンド -->
             <div class="center-panel">
                 <div class="info-box" id="match-info">1回表 攻撃中</div>
                 <div class="field-status">
@@ -378,7 +370,6 @@
                 <div id="game-log"></div>
             </div>
 
-            <!-- 右スタメン -->
             <div class="team-display">
                 <h4 style="margin:5px; text-align:center;" id="game-away-title">ビジター</h4>
                 <table>
@@ -394,7 +385,6 @@
             </div>
         </div>
 
-        <!-- 操作ボタンエリア -->
         <div class="button-group">
             <button id="next-pitch-btn">1球すすめる</button>
             <button id="skip-to-6-btn" class="btn-orange">6回まで飛ばす</button>
@@ -404,7 +394,6 @@
             <button id="back-to-league-btn" class="btn-purple hidden">リーグ戦画面に戻る ➔</button>
         </div>
 
-        <!-- 試合後の選手個人成績表 -->
         <div id="stats-container" class="stats-section hidden">
             <h3>【個人成績表】</h3>
             <div class="setup-layout">
@@ -426,112 +415,112 @@
 </div>
 
 <script>
-// 現実的な打順傾向に沿ったミート・パワー調整例（1〜9番の役割に合わせた数値）
-// 1番: 高ミート・低〜中パワー (出塁・俊足)
-// 2番: 高ミート・中パワー (繋ぎ・巧打)
-// 3番: 超高ミート・高パワー (主軸クリーンナップ)
-// 4番: 中〜高ミート・超高パワー (不動の大砲・主砲)
+// 現実的な打順傾向に沿ったミート・パワー調整（日本人架空選手版）
+// 1番: 高ミート・低〜中パワー (俊足巧打・出塁タイプ)
+// 2番: 高ミート・中パワー (繋ぎ・上位チャンス拡大)
+// 3番: 超高ミート・高パワー (最強の主軸打者)
+// 4番: 中〜高ミート・超高パワー (不動の4番・主砲)
 // 5番: 中ミート・高パワー (ポイントゲッター)
-// 6番: 中ミート・中パワー (恐怖の6番・チャンスメイク)
-// 7番: 低〜中ミート・中パワー (下位打線)
-// 8番: 低ミート・低パワー (守備型捕手等)
-// 9番: 低ミート・低パワー (投手または下位の繋ぎ)
+// 6番: 中ミート・中パワー (恐怖の6番・下位チャンスメイク)
+// 7番: 低〜中ミート・中パワー (意外性のある下位)
+// 8番: 低ミート・低パワー (守備重視の捕手など)
+// 9番: 低ミート・低パワー (俊足の下位繋ぎ、または投手枠)
 
 let allTeamsTemplate = [
     {
-        name: "NewYork Stars",
+        name: "東京ジェッツ",
         players: [
-            { name: "S.スミス", meet: 85, power: 55, isOut: false },      // 1番
-            { name: "C.クリスチャン", meet: 80, power: 65, isOut: false }, // 2番
-            { name: "M.トンプソン", meet: 90, power: 85, isOut: false },   // 3番
-            { name: "J.ロドリゲス", meet: 75, power: 98, isOut: false },   // 4番
-            { name: "A.ジャクソン", meet: 70, power: 80, isOut: false },   // 5番
-            { name: "W.ミラー", meet: 72, power: 68, isOut: false },       // 6番
-            { name: "B.デービス", meet: 60, power: 62, isOut: false },     // 7番
-            { name: "T.マルチネス", meet: 50, power: 50, isOut: false },   // 8番
-            { name: "D.アンダーソン", meet: 45, power: 40, isOut: false }  // 9番
+            { name: "坂本 拓海", meet: 85, power: 55, isOut: false },      // 1番
+            { name: "中島 賢介", meet: 80, power: 65, isOut: false },      // 2番
+            { name: "秋山 駿介", meet: 90, power: 85, isOut: false },      // 3番
+            { name: "松井 豪大", meet: 75, power: 98, isOut: false },      // 4番
+            { name: "大城 太陽", meet: 70, power: 80, isOut: false },      // 5番
+            { name: "高橋 琉生", meet: 72, power: 68, isOut: false },      // 6番
+            { name: "阿部 翔太", meet: 60, power: 62, isOut: false },      // 7番
+            { name: "中村 悠人", meet: 50, power: 50, isOut: false },      // 8番
+            { name: "小林 誠司", meet: 45, power: 40, isOut: false }       // 9番
         ],
         pitchers: [
-            { name: "G.コールマン(先)", power: 85, control: 80, currentPower: 85, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "R.ブレイザー(中1)", power: 80, control: 75, currentPower: 80, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "E.フィリップス(中2)", power: 83, control: 78, currentPower: 83, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "B.グラテロル(抑)", power: 95, control: 68, currentPower: 95, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+            { name: "菅野 智之(先)", power: 85, control: 80, currentPower: 85, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "宮西 尚樹(中1)", power: 80, control: 75, currentPower: 80, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "岩崎 優(中2)", power: 83, control: 78, currentPower: 83, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "松井 裕樹(抑)", power: 95, control: 68, currentPower: 95, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
         ],
         benchBatters: [
-            { name: "K.ヘルナンデス", meet: 75, power: 75, isOut: false },
-            { name: "J.ヘイワード", meet: 68, power: 60, isOut: false }
+            { name: "長谷川 勇", meet: 75, power: 75, isOut: false },
+            { name: "今宮 健太", meet: 68, power: 60, isOut: false }
         ]
     },
     {
-        name: "LosAngeles Kings",
+        name: "大阪ブルズ",
         players: [
-            { name: "M.ベッツ", meet: 88, power: 60, isOut: false },
-            { name: "F.フリーマン", meet: 85, power: 70, isOut: false },
-            { name: "T.ヘルナンデス", meet: 78, power: 88, isOut: false },
-            { name: "W.スミス", meet: 75, power: 92, isOut: false },
-            { name: "M.マンシー", meet: 68, power: 85, isOut: false },
-            { name: "T.エドマン", meet: 74, power: 55, isOut: false },
-            { name: "G.ラックス", meet: 70, power: 50, isOut: false },
-            { name: "A.パヘス", meet: 58, power: 68, isOut: false },
-            { name: "M.ロハス", meet: 62, power: 45, isOut: false }
+            { name: "西川 遥輝", meet: 88, power: 60, isOut: false },
+            { name: "近藤 健介", meet: 85, power: 70, isOut: false },
+            { name: "柳田 悠岐", meet: 78, power: 88, isOut: false },
+            { name: "岡本 和真", meet: 75, power: 92, isOut: false },
+            { name: "村上 宗隆", meet: 68, power: 85, isOut: false },
+            { name: "牧 秀悟", meet: 74, power: 55, isOut: false },
+            { name: "宮崎 敏郎", meet: 70, power: 50, isOut: false },
+            { name: "木浪 聖也", meet: 58, power: 68, isOut: false },
+            { name: "源田 壮亮", meet: 62, power: 45, isOut: false }
         ],
         pitchers: [
-            { name: "J.フラハティ(先)", power: 82, control: 78, currentPower: 82, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "A.バンダ(中1)", power: 81, control: 72, currentPower: 81, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "M.コーペック(中2)", power: 96, control: 65, currentPower: 96, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "B.ハドソン(抑)", power: 88, control: 82, currentPower: 88, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+            { name: "山本 由伸(先)", power: 82, control: 78, currentPower: 82, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "平良 海馬(中1)", power: 81, control: 72, currentPower: 81, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "山崎 康晃(中2)", power: 96, control: 65, currentPower: 96, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "栗林 良吏(抑)", power: 88, control: 82, currentPower: 88, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
         ],
         benchBatters: [
-            { name: "C.テイラー", meet: 65, power: 65, isOut: false },
-            { name: "A.バーンズ", meet: 55, power: 40, isOut: false }
+            { name: "桑原 将志", meet: 65, power: 65, isOut: false },
+            { name: "甲斐 拓也", meet: 55, power: 40, isOut: false }
         ]
     },
     {
-        name: "Chicago Wolves",
+        name: "福岡ファルコンズ",
         players: [
-            { name: "N.ホアーナー", meet: 82, power: 45, isOut: false },
-            { name: "D.スワンソン", meet: 75, power: 68, isOut: false },
-            { name: "I.ハップ", meet: 78, power: 78, isOut: false },
-            { name: "C.ベリンジャー", meet: 80, power: 88, isOut: false },
-            { name: "S.スズキ", meet: 82, power: 82, isOut: false },
-            { name: "M.ブッシュ", meet: 72, power: 75, isOut: false },
-            { name: "I.パレデス", meet: 68, power: 70, isOut: false },
-            { name: "P.クロウ", meet: 65, power: 55, isOut: false },
-            { name: "M.アマヤ", meet: 58, power: 50, isOut: false }
+            { name: "周東 佑京", meet: 82, power: 45, isOut: false },
+            { name: "中野 拓夢", meet: 75, power: 68, isOut: false },
+            { name: "森 友哉", meet: 78, power: 78, isOut: false },
+            { name: "山川 穂高", meet: 80, power: 88, isOut: false },
+            { name: "鈴木 誠也", meet: 82, power: 82, isOut: false },
+            { name: "万波 中正", meet: 72, power: 75, isOut: false },
+            { name: "浅村 栄斗", meet: 68, power: 70, isOut: false },
+            { name: "塩見 泰隆", meet: 65, power: 55, isOut: false },
+            { name: "坂本 誠志", meet: 58, power: 50, isOut: false }
         ],
         pitchers: [
-            { name: "J.スティール(先)", power: 84, control: 82, currentPower: 84, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "P.ホッジ(中1)", power: 88, control: 70, currentPower: 88, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "N.ピアソン(中2)", power: 94, control: 68, currentPower: 94, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "T.ミラー(抑)", power: 86, control: 80, currentPower: 86, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+            { name: "佐々木 朗希(先)", power: 84, control: 82, currentPower: 84, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "清水 昇(中1)", power: 88, control: 70, currentPower: 88, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "藤浪 晋太郎(中2)", power: 94, control: 68, currentPower: 94, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "益田 直也(抑)", power: 86, control: 80, currentPower: 86, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
         ],
         benchBatters: [
-            { name: "P.ウィズダム", meet: 50, power: 85, isOut: false },
-            { name: "M.トークマン", meet: 72, power: 55, isOut: false }
+            { name: "大山 悠輔", meet: 50, power: 85, isOut: false },
+            { name: "荻野 貴司", meet: 72, power: 55, isOut: false }
         ]
     },
     {
-        name: "Texas Rangers",
+        name: "北海道ベアーズ",
         players: [
-            { name: "M.セミエン", meet: 78, power: 65, isOut: false },
-            { name: "C.シーガー", meet: 86, power: 82, isOut: false },
-            { name: "J.スミス", meet: 80, power: 60, isOut: false },
-            { name: "A.ガルシア", meet: 68, power: 90, isOut: false },
-            { name: "N.ロウ", meet: 76, power: 72, isOut: false },
-            { name: "J.ハイン", meet: 70, power: 68, isOut: false },
-            { name: "W.ラングフォード", meet: 72, power: 70, isOut: false },
-            { name: "E.デュラン", meet: 65, power: 58, isOut: false },
-            { name: "L.タベラス", meet: 68, power: 50, isOut: false }
+            { name: "松本 剛", meet: 78, power: 65, isOut: false },
+            { name: "小園 海斗", meet: 86, power: 82, isOut: false },
+            { name: "紅林 弘太郎", meet: 80, power: 60, isOut: false },
+            { name: "細川 成也", meet: 68, power: 90, isOut: false },
+            { name: "佐藤 輝明", meet: 76, power: 72, isOut: false },
+            { name: "清宮 幸太郎", meet: 70, power: 68, isOut: false },
+            { name: "石川 昂弥", meet: 72, power: 70, isOut: false },
+            { name: "門脇 誠", meet: 65, power: 58, isOut: false },
+            { name: "辰己 涼介", meet: 68, power: 50, isOut: false }
         ],
         pitchers: [
-            { name: "N.イバルディ(先)", power: 86, control: 84, currentPower: 86, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "D.ロバートソン(中1)", power: 83, control: 76, currentPower: 83, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "J.レクラーク(中2)", power: 92, control: 66, currentPower: 92, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
-            { name: "K.イエーツ(抑)", power: 85, control: 88, currentPower: 85, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+            { name: "戸郷 翔征(先)", power: 86, control: 84, currentPower: 86, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "湯浅 京己(中1)", power: 83, control: 76, currentPower: 83, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "田口 麗斗(中2)", power: 92, control: 66, currentPower: 92, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "則本 昂大(抑)", power: 85, control: 88, currentPower: 85, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
         ],
         benchBatters: [
-            { name: "T.ジャンコウスキー", meet: 70, power: 40, isOut: false },
-            { name: "C.ケリー", meet: 62, power: 55, isOut: false }
+            { name: "中村 剛也", meet: 70, power: 40, isOut: false },
+            { name: "島内 宏明", meet: 62, power: 55, isOut: false }
         ]
     }
 ];
@@ -964,14 +953,12 @@ function stepPitch() {
 
 function skipToInning(targetInning) {
     if (game.gameOver) return;
-    addLog(`
-⏩ ${targetInning - 1}回終了まで一気にジャンプします...`);
+    addLog(`\n⏩ ${targetInning - 1}回終了まで一気にジャンプします...`);
     while (!game.gameOver && !(game.inning === targetInning && game.isTop)) {
         stepPitch();
     }
     showVisualResult(`${targetInning}回表 再開`, "#ffeb3b");
-    addLog(`
---- ${game.inning}回表 ${teamData.home.name}の攻撃から再開します ---`);
+    addLog(`\n--- ${game.inning}回表 ${teamData.home.name}の攻撃から再開します ---`);
     updateUI();
 }
 
@@ -1077,15 +1064,13 @@ function processOut() {
         if (!game.isTop && game.inning >= 9) { endGame(); } 
         else if (game.isTop) {
             game.isTop = false; game.awayScores[game.inning - 1] = 0;
-            addLog(`
---- ${game.inning}回裏 ${teamData.away.name}の攻撃 ---`);
+            addLog(`\n--- ${game.inning}回裏 ${teamData.away.name}の攻撃 ---`);
         } else {
             game.inning++;
             if (game.inning > 9) { endGame(); } 
             else {
                 game.isTop = true; game.homeScores[game.inning - 1] = 0;
-                addLog(`
---- ${game.inning}回表 ${teamData.home.name}の攻撃 ---`);
+                addLog(`\n--- ${game.inning}回表 ${teamData.home.name}の攻撃 ---`);
             }
         }
     }
@@ -1094,8 +1079,7 @@ function processOut() {
 
 function endGame() {
     game.gameOver = true;
-    addLog(`
-🎉 【試合終了】 ${teamData.home.name} ${game.homeTotal} - ${game.awayTotal} ${teamData.away.name}`);
+    addLog(`\n🎉 【試合終了】 ${teamData.home.name} ${game.homeTotal} - ${game.awayTotal} ${teamData.away.name}`);
     showVisualResult("GAME SET", "#ffeb3b");
     displayStats();
 
@@ -1173,10 +1157,8 @@ function updateUI() {
     document.getElementById('third-base').className = game.runners[2] ? 'base active' : 'base';
     document.getElementById('match-info').innerText = game.gameOver ? "試合終了" : `${game.inning}回${game.isTop ? '表' : '裏'} ${game.isTop ? teamData.home.name : teamData.away.name}の攻撃`;
 
-    document.getElementById(`home-live-pitcher`).innerText = `投: ${currentPitcher.home.name}
-(球威:${Math.round(currentPitcher.home.currentPower)} 制:${currentPitcher.home.control})`;
-    document.getElementById(`away-live-pitcher`).innerText = `投: ${currentPitcher.away.name}
-(球威:${Math.round(currentPitcher.away.currentPower)} 制:${currentPitcher.away.control})`;
+    document.getElementById(`home-live-pitcher`).innerText = `投: ${currentPitcher.home.name}\n(球威:${Math.round(currentPitcher.home.currentPower)} 制:${currentPitcher.home.control})`;
+    document.getElementById(`away-live-pitcher`).innerText = `投: ${currentPitcher.away.name}\n(球威:${Math.round(currentPitcher.away.currentPower)} 制:${currentPitcher.away.control})`;
 
     ['home', 'away'].forEach(team => {
         for (let i = 0; i < 9; i++) { document.getElementById(`${team}-batter-${i}`).classList.remove('highlight'); }
