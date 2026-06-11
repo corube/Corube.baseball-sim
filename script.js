@@ -1,0 +1,869 @@
+// 6チーム分のベースデータ
+let allTeamsTemplate = [
+    {
+        name: "自チーム(T1)",
+        players: [
+            { name: "荒木", meet: 100, power: 100, isOut: false }, { name: "鳥谷", meet: 75, power: 60, isOut: false },
+            { name: "マイルズ", meet: 85, power: 80, isOut: false }, { name: "轟 天馬", meet: 65, power: 98, isOut: false },
+            { name: "嶋村", meet: 70, power: 75, isOut: false }, { name: "坂本", meet: 60, power: 65, isOut: false },
+            { name: "岡本", meet: 55, power: 60, isOut: false }, { name: "松井", meet: 50, power: 50, isOut: false },
+            { name: "甲斐", meet: 45, power: 50, isOut: false }
+        ],
+        pitchers: [
+            { name: "菅野(先発)", power: 75, control: 75, currentPower: 75, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "中川(中継1)", power: 80, control: 80, currentPower: 80, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "高梨(中継2)", power: 85, control: 70, currentPower: 85, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "大勢(抑え)", power: 95, control: 65, currentPower: 95, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+        ],
+        benchBatters: [
+            { name: "高井(代打1)", meet: 85, power: 85, isOut: false }, { name: "周東(代打2)", meet: 60, power: 40, isOut: false }
+        ]
+    },
+    {
+        name: "敵チーム(T2)",
+        players: [
+            { name: "高橋", meet: 100, power: 100, isOut: false }, { name: "源田", meet: 70, power: 45, isOut: false },
+            { name: "柳田", meet: 80, power: 90, isOut: false }, { name: "岡本（和）", meet: 65, power: 95, isOut: false },
+            { name: "牧", meet: 75, power: 80, isOut: false }, { name: "近藤", meet: 85, power: 65, isOut: false },
+            { name: "万波", meet: 60, power: 85, isOut: false }, { name: "長岡", meet: 65, power: 50, isOut: false },
+            { name: "佐藤", meet: 55, power: 70, isOut: false }
+        ],
+        pitchers: [
+            { name: "戸郷(先発)", power: 75, control: 75, currentPower: 75, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "栗林(中継1)", power: 82, control: 78, currentPower: 82, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "松井(中継2)", power: 88, control: 72, currentPower: 88, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "マルティネス", power: 96, control: 80, currentPower: 96, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+        ],
+        benchBatters: [
+            { name: "八木(代打1)", meet: 90, power: 75, isOut: false }, { name: "浅村(代打2)", meet: 80, power: 85, isOut: false }
+        ]
+    },
+    {
+        name: "ロボッツ(T3)",
+        players: [
+            { name: "R-1号", meet: 70, power: 70, isOut: false }, { name: "R-2号", meet: 65, power: 60, isOut: false },
+            { name: "R-3号", meet: 80, power: 85, isOut: false }, { name: "R-4号", meet: 75, power: 95, isOut: false },
+            { name: "R-5号", meet: 70, power: 80, isOut: false }, { name: "R-6号", meet: 60, power: 70, isOut: false },
+            { name: "R-7号", meet: 65, power: 65, isOut: false }, { name: "R-8号", meet: 55, power: 60, isOut: false },
+            { name: "R-9号", meet: 50, power: 55, isOut: false }
+        ],
+        pitchers: [
+            { name: "アイアン(先)", power: 80, control: 80, currentPower: 80, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "スチール(中1)", power: 75, control: 75, currentPower: 75, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "ボルト(中2)", power: 85, control: 65, currentPower: 85, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "サイボーグ(抑)", power: 90, control: 70, currentPower: 90, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+        ],
+        benchBatters: [
+            { name: "R-代打A", meet: 80, power: 70, isOut: false }, { name: "R-代打B", meet: 60, power: 90, isOut: false }
+        ]
+    },
+    {
+        name: "ギガンツ(T4)",
+        players: [
+            { name: "大山", meet: 75, power: 75, isOut: false }, { name: "中野", meet: 80, power: 50, isOut: false },
+            { name: "森", meet: 70, power: 80, isOut: false }, { name: "山川", meet: 60, power: 95, isOut: false },
+            { name: "浅村", meet: 75, power: 85, isOut: false }, { name: "源田", meet: 65, power: 45, isOut: false },
+            { name: "紅林", meet: 70, power: 65, isOut: false }, { name: "木浪", meet: 65, power: 50, isOut: false },
+            { name: "梅野", meet: 55, power: 60, isOut: false }
+        ],
+        pitchers: [
+            { name: "宮城(先発)", power: 80, control: 85, currentPower: 80, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "平良(中継1)", power: 88, control: 70, currentPower: 88, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "山崎(中継2)", power: 82, control: 80, currentPower: 82, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "益田(抑え)", power: 85, control: 75, currentPower: 85, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+        ],
+        benchBatters: [
+            { name: "中村(代打)", meet: 70, power: 80, isOut: false }, { name: "糸原(代打)", meet: 75, power: 50, isOut: false }
+        ]
+    },
+    {
+        name: "ブラザーズ(T5)",
+        players: [
+            { name: "兄打A", meet: 80, power: 70, isOut: false }, { name: "弟打B", meet: 75, power: 65, isOut: false },
+            { name: "兄打C", meet: 70, power: 85, isOut: false }, { name: "弟打D", meet: 65, power: 90, isOut: false },
+            { name: "兄打E", meet: 70, power: 75, isOut: false }, { name: "弟打F", meet: 65, power: 65, isOut: false },
+            { name: "兄打G", meet: 60, power: 60, isOut: false }, { name: "弟打H", meet: 55, power: 55, isOut: false },
+            { name: "兄打I", meet: 50, power: 50, isOut: false }
+        ],
+        pitchers: [
+            { name: "長男投(先)", power: 78, control: 78, currentPower: 78, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "次男投(中1)", power: 80, control: 72, currentPower: 80, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "三男投(中2)", power: 83, control: 68, currentPower: 83, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "四男投(抑)", power: 92, control: 70, currentPower: 92, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+        ],
+        benchBatters: [
+            { name: "五男(代)", meet: 70, power: 70, isOut: false }, { name: "六男(代)", meet: 60, power: 60, isOut: false }
+        ]
+    },
+    {
+        name: "フェニックス(T6)",
+        players: [
+            { name: "不死鳥1", meet: 85, power: 75, isOut: false }, { name: "不死鳥2", meet: 75, power: 70, isOut: false },
+            { name: "不死鳥3", meet: 80, power: 85, isOut: false }, { name: "不死鳥4", meet: 70, power: 99, isOut: false },
+            { name: "不死鳥5", meet: 75, power: 80, isOut: false }, { name: "不死鳥6", meet: 65, power: 70, isOut: false },
+            { name: "不死鳥7", meet: 70, power: 60, isOut: false }, { name: "不死鳥8", meet: 60, power: 65, isOut: false },
+            { name: "不死鳥9", meet: 55, power: 55, isOut: false }
+        ],
+        pitchers: [
+            { name: "火の鳥(先)", power: 82, control: 76, currentPower: 82, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "バーン(中1)", power: 78, control: 82, currentPower: 78, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "フレア(中2)", power: 85, control: 70, currentPower: 85, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false },
+            { name: "マグマ(抑)", power: 94, control: 68, currentPower: 94, ip_outs: 0, h: 0, hr: 0, bb: 0, so: 0, r: 0, isOut: false }
+        ],
+        benchBatters: [
+            { name: "アッシュ(代)", meet: 75, power: 75, isOut: false }, { name: "ブレイズ(代)", meet: 65, power: 85, isOut: false }
+        ]
+    }
+];
+
+let teamDataList = JSON.parse(JSON.stringify(allTeamsTemplate)); // 現在編集中の全チームデータ
+let currentEditingTeamIdx = 0; // 現在タブで選択中のチーム
+
+// 動的対戦データ参照用（試合画面で使用）
+let teamData = { home: null, away: null };
+
+// リーグ戦管理データ
+let isLeagueMode = false;
+let league = {
+    teams: [],
+    matches: [],
+    currentMatchIdx: 0
+};
+
+let currentPitcher = { home: null, away: null };
+let allGamePitchers = []; 
+
+let game = {
+    inning: 1, isTop: true, outs: 0, balls: 0, strikes: 0,
+    runners: [false, false, false],
+    homeScores: Array(9).fill("-"), awayScores: Array(9).fill("-"),
+    homeTotal: 0, awayTotal: 0, homeBatterIdx: 0, awayBatterIdx: 0, gameOver: false
+};
+
+function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+// 起動・チーム数変更時処理
+function onTeamCountChange() {
+    renderTabs();
+    if (currentEditingTeamIdx >= getSelectedTeamCount()) {
+        currentEditingTeamIdx = 0;
+    }
+    renderCurrentTeamSetup();
+}
+
+function getSelectedTeamCount() {
+    return parseInt(document.getElementById('league-team-count').value) || 4;
+}
+
+function renderTabs() {
+    const container = document.getElementById('team-tabs');
+    container.innerHTML = '';
+    const count = getSelectedTeamCount();
+    for (let i = 0; i < count; i++) {
+        const btn = document.createElement('button');
+        btn.className = `tab-btn ${i === currentEditingTeamIdx ? 'active' : ''}`;
+        btn.innerText = `チーム${i+1}: ${teamDataList[i].name.substring(0,6)}`;
+        btn.onclick = () => {
+            currentEditingTeamIdx = i;
+            renderTabs();
+            renderCurrentTeamSetup();
+        };
+        container.appendChild(btn);
+    }
+}
+
+function renderCurrentTeamSetup() {
+    const team = teamDataList[currentEditingTeamIdx];
+    document.getElementById('team-name-input').value = team.name;
+
+    // スタメン描画
+    const tbody = document.getElementById('team-setup-tbody');
+    tbody.innerHTML = '';
+    team.players.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${idx+1}</strong></td>
+            <td><input type="text" value="${p.name}" onchange="teamDataList[${currentEditingTeamIdx}].players[${idx}].name=this.value"></td>
+            <td><input type="number" value="${p.meet}" onchange="teamDataList[${currentEditingTeamIdx}].players[${idx}].meet=parseInt(this.value)||0"></td>
+            <td><input type="number" value="${p.power}" onchange="teamDataList[${currentEditingTeamIdx}].players[${idx}].power=parseInt(this.value)||0"></td>
+            <td>
+                <button class="btn-sm" onclick="moveOrder(${idx}, -1)">▲</button>
+                <button class="btn-sm" onclick="moveOrder(${idx}, 1)">▼</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // ベンチ描画
+    const benchTbody = document.getElementById('team-bench-tbody');
+    benchTbody.innerHTML = '';
+    team.pitchers.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="color:#008cba">投${idx===0?'(先)':`(控${idx})`}</td>
+            <td><input type="text" value="${p.name}" onchange="teamDataList[${currentEditingTeamIdx}].pitchers[${idx}].name=this.value"></td>
+            <td><input type="number" value="${p.power}" onchange="teamDataList[${currentEditingTeamIdx}].pitchers[${idx}].power=parseInt(this.value)||0"></td>
+            <td><input type="number" value="${p.control}" onchange="teamDataList[${currentEditingTeamIdx}].pitchers[${idx}].control=parseInt(this.value)||0"></td>
+        `;
+        benchTbody.appendChild(tr);
+    });
+    team.benchBatters.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="color:#e67e22">代打${idx+1}</td>
+            <td><input type="text" value="${p.name}" onchange="teamDataList[${currentEditingTeamIdx}].benchBatters[${idx}].name=this.value"></td>
+            <td><input type="number" value="${p.meet}" onchange="teamDataList[${currentEditingTeamIdx}].benchBatters[${idx}].meet=parseInt(this.value)||0"></td>
+            <td><input type="number" value="${p.power}" onchange="teamDataList[${currentEditingTeamIdx}].benchBatters[${idx}].power=parseInt(this.value)||0"></td>
+        `;
+        benchTbody.appendChild(tr);
+    });
+}
+
+window.updateCurrentTeamName = (val) => {
+    teamDataList[currentEditingTeamIdx].name = val;
+    renderTabs();
+};
+
+window.moveOrder = (idx, dir) => {
+    let arr = teamDataList[currentEditingTeamIdx].players;
+    if (idx + dir >= 0 && idx + dir < arr.length) {
+        [arr[idx], arr[idx+dir]] = [arr[idx+dir], arr[idx]];
+        renderCurrentTeamSetup();
+    }
+};
+
+window.exportData = () => {
+    const jsonStr = JSON.stringify({ count: getSelectedTeamCount(), list: teamDataList }, null, 2);
+    document.getElementById('json-io').value = jsonStr;
+    navigator.clipboard.writeText(jsonStr);
+    alert("設定JSONデータをコピーしました！");
+};
+
+window.importData = () => {
+    const jsonStr = document.getElementById('json-io').value;
+    try {
+        const parsed = JSON.parse(jsonStr);
+        if(parsed.list && Array.isArray(parsed.list)) {
+            teamDataList = parsed.list;
+            if(parsed.count) document.getElementById('league-team-count').value = parsed.count;
+            onTeamCountChange();
+            alert("正常に読み込みました！");
+        } else { alert("データの形式が正しくありません。"); }
+    } catch(e) { alert("JSONの読み込みに失敗しました。"); }
+};
+
+// ① 1試合プレイモード開始 (Team1 vs Team2)
+document.getElementById('to-game-btn').addEventListener('click', () => {
+    isLeagueMode = false;
+    document.getElementById('screen-setup').classList.add('hidden');
+    document.getElementById('screen-game').classList.remove('hidden');
+    document.getElementById('stats-container').classList.add('hidden');
+    document.getElementById('back-to-setup-btn').classList.add('hidden');
+    document.getElementById('back-to-league-btn').classList.add('hidden');
+    
+    // チーム1とチーム2をセット
+    teamData.home = teamDataList[0];
+    teamData.away = teamDataList[1];
+
+    setupRosterNames(teamData.home, teamData.away);
+    initGame();
+});
+
+// ② リーグ戦モード開始
+document.getElementById('to-league-btn').addEventListener('click', () => {
+    isLeagueMode = true;
+    document.getElementById('screen-setup').classList.add('hidden');
+    document.getElementById('screen-league').classList.remove('hidden');
+    document.getElementById('league-log').innerHTML = "【リーグ戦開幕】シーズンがスタートしました！<br>";
+    initLeague();
+});
+
+document.getElementById('league-exit-btn').addEventListener('click', () => {
+    document.getElementById('screen-league').classList.add('hidden');
+    document.getElementById('screen-setup').classList.remove('hidden');
+    onTeamCountChange();
+});
+
+function setupRosterNames(homeTeam, awayTeam) {
+    document.getElementById('game-home-title').innerText = homeTeam.name;
+    document.getElementById('game-away-title').innerText = awayTeam.name;
+    document.getElementById('stats-home-title').innerText = homeTeam.name + " 打撃成績";
+    document.getElementById('stats-away-title').innerText = awayTeam.name + " 打撃成績";
+}
+
+// リーグ戦初期化（総当たり日程生成）
+function initLeague() {
+    const count = getSelectedTeamCount();
+    league.teams = [];
+    for (let i = 0; i < count; i++) {
+        league.teams.push({
+            id: i,
+            data: deepCopy(teamDataList[i]),
+            w: 0, l: 0, d: 0,
+            name: teamDataList[i].name
+        });
+    }
+
+    // ラウンドロビン（総当たり）日程アルゴリズム
+    league.matches = [];
+    let t = [];
+    for (let i = 0; i < count; i++) t.push(i);
+    if (count % 2 !== 0) t.push(-1); // 奇数の場合はバイ（お休み）を設ける
+
+    let numTeams = t.length;
+    let rounds = numTeams - 1;
+    let matchesPerRound = numTeams / 2;
+
+    for (let r = 0; r < rounds; r++) {
+        for (let m = 0; m < matchesPerRound; m++) {
+            let home = t[m];
+            let away = t[numTeams - 1 - m];
+            if (home !== -1 && away !== -1) {
+                league.matches.push({
+                    round: r + 1,
+                    home: home,
+                    away: away,
+                    played: false,
+                    scoreH: 0,
+                    scoreA: 0
+                });
+            }
+        }
+        // 配列を回転させる（最初の要素固定）
+        t.splice(1, 0, t.pop());
+    }
+
+    // 節（round）で昇順ソート
+    league.matches.sort((a, b) => a.round - b.round);
+    league.currentMatchIdx = 0;
+    updateLeagueUI();
+}
+
+function updateLeagueUI() {
+    // 順位表更新
+    let sortedTeams = [...league.teams].sort((a, b) => {
+        let winRateA = (a.w + a.l) > 0 ? a.w / (a.w + a.l) : 0;
+        let winRateB = (b.w + b.l) > 0 ? b.w / (b.w + b.l) : 0;
+        if (winRateB !== winRateA) return winRateB - winRateA;
+        return b.w - a.w; // 勝率が同じなら勝ち数順
+    });
+
+    const tbody = document.getElementById('league-standings-tbody');
+    tbody.innerHTML = '';
+    sortedTeams.forEach((t, index) => {
+        let total = t.w + t.l + t.d;
+        let rate = (t.w + t.l) > 0 ? (t.w / (t.w + t.l)).toFixed(3) : ".000";
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${index+1}</td><td><strong>${t.name}</strong></td><td>${total}</td><td>${t.w}</td><td>${t.l}</td><td>${t.d}</td><td>${rate}</td>`;
+        tbody.appendChild(tr);
+    });
+
+    // 日程表更新
+    const matchTable = document.getElementById('league-matches-table');
+    matchTable.innerHTML = `<thead><tr><th>節</th><th>先攻(ホーム)</th><th>スコア</th><th>後攻(ビジター)</th><th>状態</th></tr></thead><tbody>`;
+    league.matches.forEach(m => {
+        let scoreStr = m.played ? `${m.scoreH} - ${m.scoreA}` : "vs";
+        let statusStr = m.played ? "終了" : "未進行";
+        if (!m.played && league.matches[league.currentMatchIdx] === m) {
+            statusStr = "⭐ 次の試合";
+        }
+        matchTable.innerHTML += `<tr><td>第${m.round}節</td><td>${league.teams[m.home].name}</td><td style="font-weight:bold; color:#ffeb3b;">${scoreStr}</td><td>${league.teams[m.away].name}</td><td>${statusStr}</td></tr>`;
+    });
+    matchTable.innerHTML += `</tbody>`;
+
+    // 進行管理
+    let currentMatch = league.matches[league.currentMatchIdx];
+    if (!currentMatch) {
+        document.getElementById('league-progress-info').innerText = "全日程終了！";
+        document.getElementById('league-next-btn').innerText = "全日程が終了しました";
+        document.getElementById('league-next-btn').disabled = true;
+        document.getElementById('league-instant-btn').disabled = true;
+        addLeagueLog(`🏆 リーグ全日程終了！ 優勝は 🌟【${sortedTeams[0].name}】🌟 です！`);
+    } else {
+        document.getElementById('league-progress-info').innerText = `第${currentMatch.round}節 進行中`;
+        document.getElementById('league-next-btn').disabled = false;
+        document.getElementById('league-instant-btn').disabled = false;
+        let hName = league.teams[currentMatch.home].name;
+        let aName = league.teams[currentMatch.away].name;
+        
+        if (currentMatch.home === 0 || currentMatch.away === 0) {
+            document.getElementById('league-next-btn').innerText = `自チームの試合を開始 (${hName} vs ${aName}) ➔`;
+        } else {
+            document.getElementById('league-next-btn').innerText = `CPUの試合を進行 (${hName} vs ${aName}) ➔`;
+        }
+    }
+}
+
+function addLeagueLog(text) {
+    const logBox = document.getElementById('league-log');
+    logBox.innerHTML += text + "<br>";
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+// 次の試合を進行する
+document.getElementById('league-next-btn').addEventListener('click', () => {
+    let currentMatch = league.matches[league.currentMatchIdx];
+    if (!currentMatch) return;
+
+    if (currentMatch.home === 0 || currentMatch.away === 0) {
+        document.getElementById('screen-league').classList.add('hidden');
+        document.getElementById('screen-game').classList.remove('hidden');
+        document.getElementById('stats-container').classList.add('hidden');
+        document.getElementById('back-to-setup-btn').classList.add('hidden');
+        document.getElementById('back-to-league-btn').classList.remove('hidden');
+
+        teamData.home = league.teams[currentMatch.home].data;
+        teamData.away = league.teams[currentMatch.away].data;
+
+        setupRosterNames(teamData.home, teamData.away);
+        initGame();
+    } else {
+        simulateCpuMatch(currentMatch);
+    }
+});
+
+// 💥 リーグ結果を即座に表示するボタン
+document.getElementById('league-instant-btn').addEventListener('click', () => {
+    addLeagueLog(`⚡ 残りの全試合を高速シミュレートします...`);
+    while (league.currentMatchIdx < league.matches.length) {
+        let currentMatch = league.matches[league.currentMatchIdx];
+        simulateCpuMatch(currentMatch);
+    }
+    updateLeagueUI();
+});
+
+// バックグラウンドで高速結果作成
+function simulateCpuMatch(match) {
+    let hScore = Math.floor(Math.random() * 7) + Math.floor(Math.random() * 4);
+    let aScore = Math.floor(Math.random() * 7) + Math.floor(Math.random() * 4);
+    
+    match.scoreH = hScore;
+    match.scoreA = aScore;
+    match.played = true;
+
+    let tHome = league.teams[match.home];
+    let tAway = league.teams[match.away];
+
+    if (hScore > aScore) { tHome.w++; tAway.l++; }
+    else if (aScore > hScore) { tAway.w++; tHome.l++; }
+    else { tHome.d++; tAway.d++; }
+
+    addLeagueLog(`第${match.round}節: 🔷 ${tHome.name} ${hScore} - ${aScore} ${tAway.name} 🔶`);
+    league.currentMatchIdx++;
+}
+
+// 試合画面からリーグ戦画面に戻る
+document.getElementById('back-to-league-btn').addEventListener('click', () => {
+    document.getElementById('screen-game').classList.add('hidden');
+    document.getElementById('screen-league').classList.remove('hidden');
+    updateLeagueUI();
+});
+
+document.getElementById('back-to-setup-btn').addEventListener('click', () => {
+    document.getElementById('screen-game').classList.add('hidden');
+    document.getElementById('screen-setup').classList.remove('hidden');
+    onTeamCountChange();
+});
+
+// 野球シミュレーション共通コアロジック
+function initGame() {
+    game = {
+        inning: 1, isTop: true, outs: 0, balls: 0, strikes: 0,
+        runners: [false, false, false],
+        homeScores: Array(9).fill("-"), awayScores: Array(9).fill("-"),
+        homeTotal: 0, awayTotal: 0, homeBatterIdx: 0, awayBatterIdx: 0, gameOver: false
+    };
+    game.homeScores[0] = 0;
+
+    ['home', 'away'].forEach(t => {
+        teamData[t].players.forEach(p => {
+            p.isOut = false;
+            p.stats = { pa: 0, ab: 0, h: 0, d2: 0, d3: 0, hr: 0, rbi: 0, bb: 0, so: 0 };
+        });
+        teamData[t].benchBatters.forEach(p => {
+            p.isOut = false;
+            p.stats = { pa: 0, ab: 0, h: 0, d2: 0, d3: 0, hr: 0, rbi: 0, bb: 0, so: 0 };
+        });
+        teamData[t].pitchers.forEach(p => {
+            p.isOut = false;
+            p.currentPower = p.power; 
+            p.ip_outs = 0; p.h = 0; p.hr = 0; p.bb = 0; p.so = 0; p.r = 0;
+        });
+    });
+
+    currentPitcher.home = teamData.home.pitchers[0];
+    currentPitcher.away = teamData.away.pitchers[0];
+    currentPitcher.home.isOut = true;
+    currentPitcher.away.isOut = true;
+    allGamePitchers = [currentPitcher.home, currentPitcher.away];
+
+    document.getElementById('game-log').innerHTML = "【試合開始】プレイボール！<br>";
+    document.getElementById('pitch-result-text').innerText = "PLAY BALL";
+    document.getElementById('pitch-result-text').style.color = "#fff";
+    
+    renderLiveRosters();
+    updateUI();
+}
+
+function renderLiveRosters() {
+    ['home', 'away'].forEach(team => {
+        const tbody = document.getElementById(`${team}-live-roster`);
+        tbody.innerHTML = '';
+        teamData[team].players.forEach((p, idx) => {
+            const tr = document.createElement('tr');
+            tr.id = `${team}-batter-${idx}`;
+            tr.innerHTML = `<td>${idx+1}</td><td>${p.name}</td>`;
+            tbody.appendChild(tr);
+        });
+    });
+}
+
+function showVisualResult(text, color) {
+    const el = document.getElementById('pitch-result-text');
+    el.innerText = text;
+    el.style.color = color;
+}
+
+function stepPitch() {
+    if (game.gameOver) return;
+
+    let batter = game.isTop ? teamData.home.players[game.homeBatterIdx] : teamData.away.players[game.awayBatterIdx];
+    let pitcher = game.isTop ? currentPitcher.away : currentPitcher.home;
+
+    pitcher.currentPower = Math.max(20, pitcher.currentPower - 0.35);
+
+    let rand = Math.random() * 100;
+    let inPlayChance = 44; 
+
+    let strikeChance = 35 + (pitcher.control * 0.35) - (batter.meet * 0.08);
+    if (strikeChance > 75) strikeChance = 75;
+    if (strikeChance < 20) strikeChance = 20;
+
+    if (rand < inPlayChance) { 
+        processBatting(batter, pitcher);
+    } else if (rand < inPlayChance + strikeChance) {
+        game.strikes++;
+        if (game.strikes >= 3) {
+            addLog(`❌ ${batter.name}、三振！`);
+            showVisualResult("STRIKE OUT", "#ff3333");
+            batter.stats.pa++; batter.stats.ab++; batter.stats.so++; pitcher.so++;
+            processOut();
+        } else { 
+            addLog("⚾ ストライク！"); 
+            showVisualResult("STRIKE", "#ffcc00");
+        }
+    } else {
+        game.balls++;
+        if (game.balls >= 4) {
+            addLog(`🚶 ${batter.name}、フォアボール！`);
+            showVisualResult("WALK", "#00ffcc");
+            batter.stats.pa++; batter.stats.bb++; pitcher.bb++;
+            processWalk(batter);
+        } else { 
+            addLog("🟢 ボール。"); 
+            showVisualResult("BALL", "#00ff00");
+        }
+    }
+    updateUI();
+}
+
+function skipToInning(targetInning) {
+    if (game.gameOver) return;
+    addLog(`\n⏩ ${targetInning - 1}回終了まで一気にジャンプします...`);
+    while (!game.gameOver && !(game.inning === targetInning && game.isTop)) {
+        stepPitch();
+    }
+    showVisualResult(`${targetInning}回表 再開`, "#ffeb3b");
+    addLog(`\n--- ${game.inning}回表 ${teamData.home.name}の攻撃から再開します ---`);
+    updateUI();
+}
+
+function processBatting(batter, pitcher) {
+    batter.stats.pa++;
+    let diffM = batter.meet - pitcher.currentPower;
+    let hitChance = 46 + (diffM * 0.5); 
+    if (hitChance < 12) hitChance = 12;
+
+    let rand = Math.random() * 100;
+
+    if (rand < hitChance) {
+        batter.stats.ab++; batter.stats.h++; pitcher.h++;
+        let diffP = batter.power - pitcher.currentPower;
+        let targetTotalBases = 2.1 + (diffP * 0.016);
+        if (targetTotalBases < 1.3) targetTotalBases = 1.3;
+
+        let p3 = 0.05; let p2 = 0.26; 
+        let p4 = (targetTotalBases - 1.4) / 2.8; 
+        if (p4 < 0) p4 = 0;
+
+        let hitRand = Math.random();
+        let bases = 1; let hitText = "シングルヒット！"; let visualText = "HIT";
+
+        if (hitRand < p4) {
+            bases = 4; hitText = "ホームラン！！"; batter.stats.hr++; pitcher.hr++; visualText = "HOME RUN !!";
+        } else if (hitRand < p4 + p3) {
+            bases = 3; hitText = "スリーベースヒット！"; batter.stats.d3++; visualText = "3-BASE HIT";
+        } else if (hitRand < p4 + p3 + p2) {
+            bases = 2; hitText = "ツーベースヒット！"; batter.stats.d2++; visualText = "2-BASE HIT";
+        }
+
+        addLog(`🔥 ${batter.name}、${hitText}`);
+        showVisualResult(visualText, "#ffff00");
+        
+        let oldScore = game.isTop ? game.homeTotal : game.awayTotal;
+        advanceRunners(bases);
+        let newScore = game.isTop ? game.homeTotal : game.awayTotal;
+        let runs = newScore - oldScore;
+        if (runs > 0) batter.stats.rbi += runs;
+
+        resetCount(); nextBatter();
+    } else {
+        batter.stats.ab++;
+        let outType = Math.random() > 0.5 ? "ゴロアウト" : "フライアウト";
+        addLog(`❌ ${batter.name}、${outType}。`);
+        showVisualResult("OUT", "#aaaaaa");
+        processOut();
+    }
+}
+
+function processWalk(batter) {
+    let runs = 0;
+    if (game.runners[0]) {
+        if (game.runners[1]) {
+            if (game.runners[2]) { runs++; }
+            game.runners[2] = true;
+        }
+        game.runners[1] = true;
+    }
+    game.runners[0] = true;
+    if (runs > 0) {
+        addPoints(runs);
+        batter.stats.rbi += runs;
+        addLog(`✨ 押し出しフォアボールで1点追加！`);
+    }
+    resetCount(); nextBatter();
+}
+
+function advanceRunners(bases) {
+    let runs = 0;
+    for (let b = 0; b < bases; b++) {
+        if (game.runners[2]) { runs++; game.runners[2] = false; }
+        if (game.runners[1]) { game.runners[2] = true; game.runners[1] = false; }
+        if (game.runners[0]) { game.runners[1] = true; game.runners[0] = false; }
+        if (b === 0) game.runners[0] = true;
+        else if (b === 1) { game.runners[0] = false; game.runners[1] = true; }
+    }
+    if (runs > 0) addPoints(runs);
+}
+
+function addPoints(runs) {
+    let pitcher = game.isTop ? currentPitcher.away : currentPitcher.home;
+    pitcher.r += runs;
+    if (game.isTop) {
+        game.homeTotal += runs;
+        game.homeScores[game.inning - 1] = (game.homeScores[game.inning - 1] === "-" ? 0 : game.homeScores[game.inning - 1]) + runs;
+    } else {
+        game.awayTotal += runs;
+        game.awayScores[game.inning - 1] = (game.awayScores[game.inning - 1] === "-" ? 0 : game.awayScores[game.inning - 1]) + runs;
+    }
+}
+
+function processOut() {
+    game.outs++;
+    let pitcher = game.isTop ? currentPitcher.away : currentPitcher.home;
+    pitcher.ip_outs++; 
+    resetCount();
+    if (game.outs >= 3) {
+        addLog(`チェンジ！`);
+        game.runners = [false, false, false]; game.outs = 0;
+
+        if (!game.isTop && game.inning >= 9) { endGame(); } 
+        else if (game.isTop) {
+            game.isTop = false; game.awayScores[game.inning - 1] = 0;
+            addLog(`\n--- ${game.inning}回裏 ${teamData.away.name}の攻撃 ---`);
+        } else {
+            game.inning++;
+            if (game.inning > 9) { endGame(); } 
+            else {
+                game.isTop = true; game.homeScores[game.inning - 1] = 0;
+                addLog(`\n--- ${game.inning}回表 ${teamData.home.name}の攻撃 ---`);
+            }
+        }
+    }
+    nextBatter();
+}
+
+function endGame() {
+    game.gameOver = true;
+    addLog(`\n🎉 【試合終了】 ${teamData.home.name} ${game.homeTotal} - ${game.awayTotal} ${teamData.away.name}`);
+    showVisualResult("GAME SET", "#ffeb3b");
+    displayStats();
+
+    if (isLeagueMode) {
+        let currentMatch = league.matches[league.currentMatchIdx];
+        currentMatch.scoreH = game.homeTotal;
+        currentMatch.scoreA = game.awayTotal;
+        currentMatch.played = true;
+
+        let tHome = league.teams[currentMatch.home];
+        let tAway = league.teams[currentMatch.away];
+
+        if (game.homeTotal > game.awayTotal) { tHome.w++; tAway.l++; } 
+        else if (game.awayTotal > game.homeTotal) { tAway.w++; tHome.l++; } 
+        else { tHome.d++; tAway.d++; }
+
+        addLeagueLog(`第${currentMatch.round}節: 🔷 ${tHome.name} ${game.homeTotal} - ${game.awayTotal} ${tAway.name} 🔶`);
+        league.currentMatchIdx++;
+    }
+}
+
+function resetCount() { game.balls = 0; game.strikes = 0; }
+function nextBatter() {
+    if (game.gameOver) return;
+    if (game.isTop) { game.homeBatterIdx = (game.homeBatterIdx + 1) % 9; } 
+    else { game.awayBatterIdx = (game.awayBatterIdx + 1) % 9; }
+}
+
+window.callPinchHitter = (team, benchIdx) => {
+    if (game.gameOver) return;
+    if ((team === 'home' && !game.isTop) || (team === 'away' && game.isTop)) {
+        alert("攻撃中のチームしか代打を出せません！"); return;
+    }
+    let bIdx = team === 'home' ? game.homeBatterIdx : game.awayBatterIdx;
+    let oldPlayer = teamData[team].players[bIdx];
+    let newPlayer = teamData[team].benchBatters[benchIdx];
+
+    addLog(`📣 【代打交代】 ${oldPlayer.name} に代わって ${newPlayer.name} !!`);
+    teamData[team].players[bIdx] = newPlayer; newPlayer.isOut = true; 
+    renderLiveRosters(); updateUI();
+};
+
+window.callRelief = (team, pitcherIdx) => {
+    if (game.gameOver) return;
+    if ((team === 'home' && game.isTop) || (team === 'away' && !game.isTop)) {
+        alert("守備中のチームしかリリーフを送れません！"); return;
+    }
+    let newPitcher = teamData[team].pitchers[pitcherIdx];
+    let oldPitcher = currentPitcher[team];
+
+    addLog(`📣 【投手交代】 ピッチャー ${oldPitcher.name} に代わりまして ${newPitcher.name} !!`);
+    currentPitcher[team] = newPitcher; newPitcher.isOut = true;
+    if(!allGamePitchers.includes(newPitcher)){ allGamePitchers.push(newPitcher); }
+    updateUI();
+};
+
+function updateUI() {
+    const header = document.getElementById('sb-header');
+    const homeRow = document.getElementById('sb-home');
+    const awayRow = document.getElementById('sb-away');
+    let head = '<th>TEAM</th>';
+    let hLine = `<td class="${game.isTop && !game.gameOver ? 'current-team' : ''}">${teamData.home.name.substring(0, 4)}</td>`;
+    let aLine = `<td class="${!game.isTop && !game.gameOver ? 'current-team' : ''}">${teamData.away.name.substring(0, 4)}</td>`;
+    for (let i = 1; i <= 9; i++) {
+        head += `<th>${i}</th>`; hLine += `<td>${game.homeScores[i-1]}</td>`; aLine += `<td>${game.awayScores[i-1]}</td>`;
+    }
+    head += '<th class="total">R</th>'; hLine += `<td class="total">${game.homeTotal}</td>`; aLine += `<td class="total">${game.awayTotal}</td>`;
+    header.innerHTML = head; homeRow.innerHTML = hLine; awayRow.innerHTML = aLine;
+
+    document.getElementById('dots-b').innerHTML = '●'.repeat(game.balls) + '○'.repeat(3 - game.balls);
+    document.getElementById('dots-s').innerHTML = '●'.repeat(game.strikes) + '○'.repeat(2 - game.strikes);
+    document.getElementById('dots-o').innerHTML = '●'.repeat(game.outs) + '○'.repeat(2 - game.outs);
+    document.getElementById('first-base').className = game.runners[0] ? 'base active' : 'base';
+    document.getElementById('second-base').className = game.runners[1] ? 'base active' : 'base';
+    document.getElementById('third-base').className = game.runners[2] ? 'base active' : 'base';
+    document.getElementById('match-info').innerText = game.gameOver ? "試合終了" : `${game.inning}回${game.isTop ? '表' : '裏'} ${game.isTop ? teamData.home.name : teamData.away.name}の攻撃`;
+
+    document.getElementById(`home-live-pitcher`).innerText = `投: ${currentPitcher.home.name}\n(球威:${Math.round(currentPitcher.home.currentPower)} 制:${currentPitcher.home.control})`;
+    document.getElementById(`away-live-pitcher`).innerText = `投: ${currentPitcher.away.name}\n(球威:${Math.round(currentPitcher.away.currentPower)} 制:${currentPitcher.away.control})`;
+
+    ['home', 'away'].forEach(team => {
+        for (let i = 0; i < 9; i++) { document.getElementById(`${team}-batter-${i}`).classList.remove('highlight'); }
+    });
+    if (!game.gameOver) {
+        if (game.isTop) { document.getElementById(`home-batter-${game.homeBatterIdx}`).classList.add('highlight'); } 
+        else { document.getElementById(`away-batter-${game.awayBatterIdx}`).classList.add('highlight'); }
+    }
+
+    updateBenchActionDOM('home'); updateBenchActionDOM('away');
+
+    if (game.gameOver || game.inning >= 7) { document.getElementById('skip-to-6-btn').classList.add('hidden'); } 
+    else { document.getElementById('skip-to-6-btn').classList.remove('hidden'); }
+    if (game.gameOver || game.inning >= 8) { document.getElementById('skip-to-7-btn').classList.add('hidden'); } 
+    else { document.getElementById('skip-to-7-btn').classList.remove('hidden'); }
+
+    if (game.gameOver) {
+        document.getElementById('next-pitch-btn').classList.add('hidden');
+        document.getElementById('auto-game-btn').classList.add('hidden');
+        if (isLeagueMode) {
+            document.getElementById('back-to-setup-btn').classList.add('hidden');
+            document.getElementById('back-to-league-btn').classList.remove('hidden');
+        } else {
+            document.getElementById('back-to-setup-btn').classList.remove('hidden');
+            document.getElementById('back-to-league-btn').classList.add('hidden');
+        }
+    } else {
+        document.getElementById('next-pitch-btn').classList.remove('hidden');
+        document.getElementById('auto-game-btn').classList.remove('hidden');
+        document.getElementById('back-to-setup-btn').classList.add('hidden');
+        document.getElementById('back-to-league-btn').classList.add('hidden');
+    }
+}
+
+function updateBenchActionDOM(team) {
+    const container = document.getElementById(`${team}-bench-actions`);
+    container.innerHTML = '';
+    teamData[team].pitchers.forEach((p, idx) => {
+        if (currentPitcher[team] !== p && !p.isOut) {
+            const btn = document.createElement('button'); btn.className = "btn-sm btn-secondary"; btn.style.margin = "2px";
+            btn.innerText = `投: ${p.name}`; btn.onclick = () => callRelief(team, idx); container.appendChild(btn);
+        }
+    });
+    teamData[team].benchBatters.forEach((p, idx) => {
+        if (!p.isOut) {
+            const btn = document.createElement('button'); btn.className = "btn-sm btn-secondary"; btn.style.margin = "2px";
+            btn.innerText = `代打: ${p.name}`; btn.onclick = () => callPinchHitter(team, idx); container.appendChild(btn);
+        }
+    });
+    if(container.innerHTML === '') container.innerText = "利用可能な控え選手はいません";
+}
+
+function addLog(text) {
+    const logDiv = document.getElementById('game-log'); logDiv.innerHTML += text + "<br>"; logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+function displayStats() {
+    document.getElementById('stats-container').classList.remove('hidden');
+    let allHomeBatters = [...teamData.home.players, ...teamData.home.benchBatters].filter(p => p.stats.pa > 0);
+    let allAwayBatters = [...teamData.away.players, ...teamData.away.benchBatters].filter(p => p.stats.pa > 0);
+    renderBatterTable('home-batter-stats', allHomeBatters); renderBatterTable('away-batter-stats', allAwayBatters);
+    renderPitcherTable('home-pitcher-stats', allGamePitchers.filter(p => teamData.home.pitchers.includes(p)));
+    renderPitcherTable('away-pitcher-stats', allGamePitchers.filter(p => teamData.away.pitchers.includes(p)));
+}
+
+function renderBatterTable(tableId, players) {
+    const table = document.getElementById(tableId);
+    let html = `<thead><tr><th>名前</th><th>打席</th><th>打数</th><th>安打</th><th>本塁打</th><th>打点</th><th>四球</th><th>三振</th><th>打率</th></tr></thead><tbody>`;
+    players.forEach(p => {
+        let avg = p.stats.ab > 0 ? (p.stats.h / p.stats.ab).toFixed(3) : ".000"; if (avg.startsWith("0.")) avg = avg.substring(1);
+        html += `<tr><td><strong>${p.name}</strong></td><td>${p.stats.pa}</td><td>${p.stats.ab}</td><td>${p.stats.h}</td><td>${p.stats.hr}</td><td>${p.stats.rbi}</td><td>${p.stats.bb}</td><td>${p.stats.so}</td><td style="color:#ffeb3b; font-weight:bold;">${avg}</td></tr>`;
+    });
+    table.innerHTML = html + "</tbody>";
+}
+
+function renderPitcherTable(tableId, pitchers) {
+    const table = document.getElementById(tableId);
+    let html = `<thead><tr><th>名前</th><th>投球回</th><th>被安</th><th>被本</th><th>四球</th><th>三振</th><th>失点</th></tr></thead><tbody>`;
+    pitchers.forEach(p => {
+        let ip_str = `${Math.floor(p.ip_outs / 3)}${p.ip_outs % 3 > 0 ? ' ' + (p.ip_outs % 3) + '/3' : ''}`;
+        html += `<tr><td><strong>${p.name}</strong></td><td>${ip_str}</td><td>${p.h}</td><td>${p.hr}</td><td>${p.bb}</td><td>${p.so}</td><td style="color:#ff4f4f; font-weight:bold;">${p.r}</td></tr>`;
+    });
+    table.innerHTML = html + "</tbody>";
+}
+
+document.getElementById('next-pitch-btn').addEventListener('click', stepPitch);
+document.getElementById('auto-game-btn').addEventListener('click', () => { while (!game.gameOver) { stepPitch(); } });
+document.getElementById('skip-to-6-btn').addEventListener('click', () => skipToInning(7));
+document.getElementById('skip-to-7-btn').addEventListener('click', () => skipToInning(8));
+
+// 初回初期化
+onTeamCountChange();
