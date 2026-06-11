@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>本格対戦型野球シミュレーター v13.3 (イニングスキップ機能追加)</title>
+    <title>本格対戦型野球シミュレーター v13.3 (一括クリア機能追加)</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -164,6 +164,8 @@
         .btn-sm { padding: 3px 6px; font-size: 11px; background-color: #008cba; }
         .btn-secondary { background-color: #555; }
         .btn-secondary:hover { background-color: #444; }
+        .btn-danger { background-color: #c0392b; }
+        .btn-danger:hover { background-color: #a93226; }
         
         .scoreboard-table { width: 100%; font-weight: bold; font-family: monospace; font-size: 18px; margin-bottom: 20px; }
         .scoreboard-table th { background: #111; color: #aaa; }
@@ -249,7 +251,8 @@
 
                 <div id="slots-container"></div>
                 <div style="text-align:center; margin-top:15px;">
-                    <button onclick="autoFillCurrentOrder()" class="btn-sm btn-secondary">このチームをおまかせ編成</button>
+                    <button onclick="clearCurrentOrder()" class="btn-sm btn-danger">このチームのオーダーを一括クリア</button>
+                    <button onclick="autoFillCurrentOrder()" class="btn-sm btn-secondary" style="margin-left:5px;">このチームをおまかせ編成</button>
                     <button onclick="startGameMode()" style="background:#2980b9; margin-left:10px;">試合開始！</button>
                 </div>
             </div>
@@ -304,10 +307,8 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:center; gap:10px; margin-top:20px; flex-wrap:wrap;">
+        <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
             <button id="next-pitch-btn" onclick="stepPitch()">1球すすめる</button>
-            <button id="skip-7th-btn" class="btn-secondary" onclick="skipToInning(7)" style="background-color: #d35400;">7回まで飛ばす</button>
-            <button id="skip-8th-btn" class="btn-secondary" onclick="skipToInning(8)" style="background-color: #c0392b;">8回まで飛ばす</button>
             <button id="auto-game-btn" class="btn-secondary" onclick="autoPlayGame()">一気に結果を見る</button>
             <button id="reset-game-btn" class="btn-sm btn-secondary hidden" onclick="initGame()">もう一度プレイ</button>
         </div>
@@ -630,6 +631,23 @@ function createSlotDOM(container, id, labelText, playerObj, isPitcher) {
     container.appendChild(div);
 }
 
+// 選択中のチームのオーダーを一括クリアする機能
+function clearCurrentOrder() {
+    let teamName = editingTeam === 'home' ? "マイチーム" : "ライバルズ";
+    if (!confirm(`本当に${teamName}の現在のオーダーをすべて外しますか？`)) {
+        return;
+    }
+    
+    let currentOrder = getTeamOrder(editingTeam);
+    currentOrder.batters = Array(9).fill(null);
+    currentOrder.sp = null;
+    currentOrder.rp = Array(3).fill(null);
+    
+    selectedSlotId = null;
+    renderPoolButtons();
+    renderSlots();
+}
+
 // 選択中のチームをおまかせ編成
 function autoFillCurrentOrder() {
     let currentOrder = getTeamOrder(editingTeam);
@@ -675,8 +693,6 @@ let currentPitcher = { home: null, away: null };
 function initGame() {
     document.getElementById('reset-game-btn').classList.add('hidden');
     document.getElementById('next-pitch-btn').disabled = false;
-    document.getElementById('skip-7th-btn').disabled = false;
-    document.getElementById('skip-8th-btn').disabled = false;
     document.getElementById('auto-game-btn').disabled = false;
 
     game = {
@@ -873,8 +889,6 @@ function endGame() {
     addLog(`\n🎉 【試合終了】 ${game.homeTeam.name} ${game.homeTotal} - ${game.awayTotal} ${game.awayTeam.name}`);
     document.getElementById('reset-game-btn').classList.remove('hidden');
     document.getElementById('next-pitch-btn').disabled = true;
-    document.getElementById('skip-7th-btn').disabled = true;
-    document.getElementById('skip-8th-btn').disabled = true;
     document.getElementById('auto-game-btn').disabled = true;
 }
 
@@ -893,24 +907,6 @@ function addLog(text) {
     const logDiv = document.getElementById('game-log'); logDiv.innerHTML += text + "<br>"; logDiv.scrollTop = logDiv.scrollHeight;
 }
 function autoPlayGame() { while (!game.gameOver) { stepPitch(); } }
-
-// 指定したイニング（の表）まで一気に試合を進める関数
-function skipToInning(targetInning) {
-    if (game.gameOver) return;
-    
-    // すでに指定イニングを超えている場合は何もしない
-    if (game.inning >= targetInning) {
-        alert(`すでに ${targetInning} 回以降、またはそのイニングの攻撃中・終了後です。`);
-        return;
-    }
-
-    addLog(`\n⏩ ${targetInning}回表まで試合をスキップします...`);
-    
-    // 指定イニングの「表」に到達する、もしくはゲームが終了するまでループ
-    while (!game.gameOver && !(game.inning === targetInning && game.isTop)) {
-        stepPitch();
-    }
-}
 
 function updateUI() {
     const header = document.getElementById('sb-header');
