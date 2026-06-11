@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>本格対戦型野球シミュレーター v13</title>
+    <title>本格対戦型野球シミュレーター v13.2</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -99,6 +99,17 @@
         .player-card-btn:hover { background: #455a6f; border-color: #3498db; }
         .player-card-btn.selected { background: #16a085; border-color: #1abc9c; opacity: 0.6; }
 
+        /* ステータスバッジのスタイル */
+        .stat-badge {
+            display: inline-block;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #000 !important; /* 背景色が見えやすいように文字は黒 */
+            font-size: 11px;
+            margin: 1px;
+        }
+
         .current-slots {
             background: #1e242b;
             padding: 15px;
@@ -117,7 +128,7 @@
         .slot-row.pitcher-slot { border-left-color: #3498db; }
         .slot-label { width: 80px; font-weight: bold; font-size: 14px; }
         .slot-value { flex-grow: 1; font-weight: bold; color: #ffeb3b; }
-        .slot-cancel-btn { background: #c0392b; padding: 2px 6px; font-size: 11px; }
+        .slot-cancel-btn { background: #c0392b; padding: 2px 6px; font-size: 11px; color: white; border: none; border-radius: 3px; cursor: pointer;}
 
         /* オリジナル選手作成 */
         .creator-form {
@@ -179,7 +190,7 @@
 </head>
 <body>
 
-<h1>本格対戦型野球シミュレーター v13</h1>
+<h1>本格対戦型野球シミュレーター v13.2</h1>
 
 <div class="container">
     
@@ -349,14 +360,14 @@ const masterPlayers = {
 
 // 選択中のプールタブ
 let currentPoolTab = 'batter';
-// スロット選択中のインデックス (null の場合は末尾に追加、または左側から順に割り当て)
+// スロット選択中のインデックス
 let selectedSlotId = null;
 
 // マイチームのオーダー構成オブジェクト
 let myOrder = {
     batters: Array(9).fill(null),
     sp: null,
-    rp: Array(3).fill(null) // 試合で使うリリーフ枠3つ
+    rp: Array(3).fill(null)
 };
 
 // 固定のCPU敵チーム
@@ -378,6 +389,16 @@ const cpuTeam = {
         { name: "神谷 達也(替)", power: 82, control: 75 }
     ]
 };
+
+// ★ご要望のカラーグラデーションを判定するヘルパー関数
+// 高いほど赤、オレンジ、黄、水色、低いほど青
+function getStatColor(value) {
+    if (value >= 90) return "#ff3333"; // 赤 (90以上)
+    if (value >= 80) return "#ff9800"; // オレンジ (80〜89)
+    if (value >= 70) return "#ffeb3b"; // 黄色 (70〜79)
+    if (value >= 55) return "#00d2ff"; // 水色 (55〜69)
+    return "#3498db";                  // 青 (54以下)
+}
 
 // ページ切り替え
 function switchPage(pageId) {
@@ -416,21 +437,21 @@ function createOriginalPlayer() {
     if (type === 'batter') {
         const m = parseInt(document.getElementById('create-meet').value) || 50;
         const p = parseInt(document.getElementById('create-power').value) || 50;
-        masterPlayers.batter.push({ id: id, name: name + "(自作)", meet: m, power: p, desc: "オリジナル打者" });
+        masterPlayers.batter.push({ id: id, name: name, meet: m, power: p, desc: "自作野手" });
         switchPoolTab('batter');
     } else {
         const pw = parseInt(document.getElementById('create-pitcher-power').value) || 50;
         const ct = parseInt(document.getElementById('create-control').value) || 50;
         if (type === 'pitcher-sp') {
-            masterPlayers['pitcher-sp'].push({ id: id, name: name + "(自作先)", power: pw, control: ct, desc: "オリジナル先発" });
+            masterPlayers['pitcher-sp'].push({ id: id, name: name, power: pw, control: ct, desc: "自作先発" });
             switchPoolTab('pitcher-sp');
         } else {
-            masterPlayers['pitcher-rp'].push({ id: id, name: name + "(自作継)", power: pw, control: ct, desc: "オリジナル中継ぎ" });
+            masterPlayers['pitcher-rp'].push({ id: id, name: name, power: pw, control: ct, desc: "自作中継ぎ" });
             switchPoolTab('pitcher-rp');
         }
     }
     document.getElementById('create-name').value = "";
-    alert(`${name} をプールに登録しました！選択してオーダーに入れましょう。`);
+    alert(`${name} をプールに登録しました！`);
 }
 
 // プールタブ切り替え
@@ -454,14 +475,26 @@ function renderPoolButtons() {
 
     const list = masterPlayers[currentPoolTab];
     list.forEach(p => {
-        // すでにオーダーに入っているかチェック
         const isSelected = isPlayerInOrder(p.id);
 
         const btn = document.createElement('button');
         btn.className = `player-card-btn ${isSelected ? 'selected' : ''}`;
         
-        let statText = currentPoolTab === 'batter' ? `ミ:${p.meet} パ:${p.power}` : `球:${p.power} 制:${p.control}`;
-        btn.innerHTML = `<strong>${p.name}</strong><br><span style="font-size:10px;color:#bbb;">${statText}</span><br><span style="font-size:9px;color:#999;">${p.desc}</span>`;
+        // ★能力値バッジのHTML生成（指定のカラースキーマを適用）
+        let statHTML = "";
+        if (currentPoolTab === 'batter') {
+            statHTML = `
+                <span class="stat-badge" style="background:${getStatColor(p.meet)};">ミ:${p.meet}</span>
+                <span class="stat-badge" style="background:${getStatColor(p.power)};">パ:${p.power}</span>`;
+        } else {
+            statHTML = `
+                <span class="stat-badge" style="background:${getStatColor(p.power)};">球:${p.power}</span>
+                <span class="stat-badge" style="background:${getStatColor(p.control)};">制:${p.control}</span>`;
+        }
+        
+        let descStyle = p.desc.startsWith("自作") ? "color:#2ecc71; font-weight:bold;" : "color:#999;";
+        
+        btn.innerHTML = `<strong>${p.name}</strong><br>${statHTML}<br><span style="font-size:9px; ${descStyle}">${p.desc}</span>`;
         
         btn.onclick = () => selectPlayerFromPool(p);
         container.appendChild(btn);
@@ -482,7 +515,6 @@ function selectPlayerFromPool(player) {
         return;
     }
 
-    // もし右側で特定スロットがハイライト（指定）されていたらそこに入れる、なければ空いている適切な場所に自動配置
     if (selectedSlotId) {
         assignToSlot(selectedSlotId, player);
     } else {
@@ -496,7 +528,7 @@ function autoAssignPlayer(player) {
     if (currentPoolTab === 'batter') {
         let idx = myOrder.batters.findIndex(b => b === null);
         if (idx !== -1) myOrder.batters[idx] = player;
-        else alert("スタメン打者(1〜9番)枠がいっぱいです。入れ替えたい枠を直接選んでください。");
+        else alert("スタメン打者枠がいっぱいです。入れ替えたい枠を右側から直接選んでください。");
     } else if (currentPoolTab === 'pitcher-sp') {
         myOrder.sp = player;
     } else if (currentPoolTab === 'pitcher-rp') {
@@ -519,7 +551,7 @@ function assignToSlot(slotId, player) {
         let idx = parseInt(slotId.split('_')[1]);
         myOrder.rp[idx] = player;
     }
-    selectedSlotId = null; // 配置したら選択ハイライト解除
+    selectedSlotId = null;
 }
 
 // 右側スロットのレンダリング
@@ -557,16 +589,24 @@ function createSlotDOM(container, id, labelText, playerObj, isPitcher) {
     const val = document.createElement('span');
     val.className = 'slot-value';
     if (playerObj) {
-        let st = !isPitcher ? `(ミ:${playerObj.meet} パ:${playerObj.power})` : `(球:${playerObj.power} 制:${playerObj.control})`;
-        val.innerText = `${playerObj.name} ${st}`;
+        // ★右側のスロット内でもカラーグラデーションの能力値バッジを表示
+        let statHTML = "";
+        if (!isPitcher) {
+            statHTML = `
+                <span class="stat-badge" style="background:${getStatColor(playerObj.meet)};">ミ:${playerObj.meet}</span>
+                <span class="stat-badge" style="background:${getStatColor(playerObj.power)};">パ:${playerObj.power}</span>`;
+        } else {
+            statHTML = `
+                <span class="stat-badge" style="background:${getStatColor(playerObj.power)};">球:${playerObj.power}</span>
+                <span class="stat-badge" style="background:${getStatColor(playerObj.control)};">制:${playerObj.control}</span>`;
+        }
+        val.innerHTML = `${playerObj.name} <span style="font-size:11px;color:#aaa;">[${playerObj.desc}]</span> ${statHTML}`;
     } else {
         val.innerText = "【未選択 - プールから選んでください】";
         val.style.color = "#888";
     }
-    // スロット自体をクリックすると「ここに入れる」の指定ターゲットになる
     val.onclick = () => {
         selectedSlotId = id;
-        // 自動でタブを切り替えて選ぶ手助けをする
         if (id === 'sp') switchPoolTab('pitcher-sp');
         else if (id.startsWith('rp_')) switchPoolTab('pitcher-rp');
         else switchPoolTab('batter');
@@ -603,7 +643,6 @@ function removePlayerFromSlot(id) {
 
 // おまかせ自動編成
 function autoFillOrder() {
-    // 未配置のところに適当に突っ込む
     for (let i = 0; i < 9; i++) {
         if (!myOrder.batters[i]) {
             let p = masterPlayers.batter.find(b => !isPlayerInOrder(b.id));
@@ -635,7 +674,7 @@ function startGameMode() {
 
 
 // ==========================================
-//        ここから下は試合進行シミュレータエンジン
+//        試合進行シミュレータエンジン
 // ==========================================
 let game = {};
 let currentPitcher = { home: null, away: null };
@@ -645,7 +684,6 @@ function initGame() {
     document.getElementById('next-pitch-btn').disabled = false;
     document.getElementById('auto-game-btn').disabled = false;
 
-    // ゲーム状態初期化
     game = {
         inning: 1, isTop: true, outs: 0, balls: 0, strikes: 0,
         runners: [false, false, false],
@@ -654,7 +692,6 @@ function initGame() {
     };
     game.homeScores[0] = 0;
 
-    // マイチーム（Home）データ成形
     game.homeTeam = {
         name: "マイチーム",
         players: myOrder.batters.map(b => ({ ...b, currentPower: b.power })),
@@ -664,7 +701,6 @@ function initGame() {
         ]
     };
 
-    // CPUチーム（Away）データコピー
     game.awayTeam = JSON.parse(JSON.stringify(cpuTeam));
     game.awayTeam.pitchers.forEach(p => p.currentPower = p.power);
 
@@ -696,18 +732,16 @@ function stepPitch() {
     let batter = game.isTop ? game.homeTeam.players[game.homeBatterIdx] : game.awayTeam.players[game.awayBatterIdx];
     let pitcher = game.isTop ? currentPitcher.away : currentPitcher.home;
 
-    pitcher.currentPower = Math.max(20, pitcher.currentPower - 0.3); // 1球ごとにスタミナ微減
+    pitcher.currentPower = Math.max(20, pitcher.currentPower - 0.3);
 
     let rand = Math.random() * 100;
     let inPlayChance = 45;
     let strikeChance = 35 + (pitcher.control * 0.2) - (batter.meet * 0.05);
 
     if (rand < inPlayChance) {
-        // インプレイ（打撃）
         let diffM = batter.meet - pitcher.currentPower;
         let hitChance = 45 + (diffM * 0.5);
         if (Math.random() * 100 < hitChance) {
-            // ヒット
             let diffP = batter.power - pitcher.currentPower;
             let hrChance = 5 + (diffP * 0.2);
             let bases = 1;
@@ -720,7 +754,6 @@ function stepPitch() {
             advanceRunners(bases);
             resetCount(); nextBatter();
         } else {
-            // アウト
             addLog(`❌ ${batter.name}、打ち取られてアウト。`);
             showVisualResult("OUT", "#aaa");
             processOut();
@@ -745,14 +778,11 @@ function stepPitch() {
         }
     }
 
-    // 自動リリーフ判定（5点以上失点 or 7回以降ランダムなど）
     checkCpuAndPlayerRelief();
-
     updateUI();
 }
 
 function checkCpuAndPlayerRelief() {
-    // プレイヤー中継ぎ自動継投 (簡易版: 7回以降で次の投手に)
     if (!game.isTop && game.inning === 7 && currentPitcher.home === game.homeTeam.pitchers[0]) {
         currentPitcher.home = game.homeTeam.pitchers[1] || currentPitcher.home;
         addLog(`📣 【マイチーム継投】ピッチャー交代、${currentPitcher.home.name}！`);
@@ -761,7 +791,6 @@ function checkCpuAndPlayerRelief() {
         currentPitcher.home = game.homeTeam.pitchers[2] || currentPitcher.home;
         addLog(`📣 【マイチーム継投】クローザー投入、${currentPitcher.home.name}！`);
     }
-    // CPU自動継投
     if (game.isTop && game.inning >= 6 && currentPitcher.away === game.awayTeam.pitchers[0]) {
         currentPitcher.away = game.awayTeam.pitchers[1];
         addLog(`📣 【ライバルズ継投】ピッチャー交代、${currentPitcher.away.name}！`);
@@ -852,7 +881,6 @@ function addLog(text) {
 function autoPlayGame() { while (!game.gameOver) { stepPitch(); } }
 
 function updateUI() {
-    // スコアボード更新
     const header = document.getElementById('sb-header');
     const homeRow = document.getElementById('sb-home');
     const awayRow = document.getElementById('sb-away');
@@ -865,7 +893,6 @@ function updateUI() {
     head += '<th class="total">R</th>'; hLine += `<td class="total">${game.homeTotal}</td>`; aLine += `<td class="total">${game.awayTotal}</td>`;
     header.innerHTML = head; homeRow.innerHTML = hLine; awayRow.innerHTML = aLine;
 
-    // カウント更新
     document.getElementById('dots-b').innerHTML = '●'.repeat(game.balls) + '○'.repeat(3 - game.balls);
     document.getElementById('dots-s').innerHTML = '●'.repeat(game.strikes) + '○'.repeat(2 - game.strikes);
     document.getElementById('dots-o').innerHTML = '●'.repeat(game.outs) + '○'.repeat(2 - game.outs);
@@ -877,7 +904,6 @@ function updateUI() {
     document.getElementById(`home-live-pitcher`).innerText = `投: ${currentPitcher.home.name} (球威:${Math.round(currentPitcher.home.currentPower)})`;
     document.getElementById(`away-live-pitcher`).innerText = `投: ${currentPitcher.away.name} (球威:${Math.round(currentPitcher.away.currentPower)})`;
 
-    // 打者ハイライト
     ['home', 'away'].forEach(side => {
         for (let i = 0; i < 9; i++) {
             let el = document.getElementById(`${side}-batter-${i}`);
@@ -890,7 +916,6 @@ function updateUI() {
     }
 }
 
-// 初期起動処理
 switchPoolTab('batter');
 renderSlots();
 </script>
