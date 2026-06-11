@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本格対戦型野球シミュレーター v11</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>本格対戦型野球シミュレーター</h1>
+
+<div class="container">
+    
+    <div id="screen-setup" class="box">
+        <h2>チーム編成 & 選手能力編集</h2>
+        
+        <div class="config-panel">
+            <label for="league-team-count">リーグ戦の参加チーム数:</label>
+            <select id="league-team-count" onchange="onTeamCountChange()">
+                <option value="2">2チーム</option>
+                <option value="3">3チーム</option>
+                <option value="4" selected>4チーム</option>
+                <option value="5">5チーム</option>
+                <option value="6">6チーム</option>
+            </select>
+            <span style="font-size:12px; color:#aaa; margin-left:10px;">※1試合プレイは「チーム1 vs チーム2」で行われます。</span>
+        </div>
+
+        <div class="setup-tabs" id="team-tabs"></div>
+
+        <div class="team-edit-area">
+            <input type="text" id="team-name-input" class="team-name-input" value="" onchange="updateCurrentTeamName(this.value)">
+            <div class="setup-layout">
+                <div>
+                    <h4>スタメン</h4>
+                    <table>
+                        <thead><tr><th>順</th><th>名前</th><th>ミ</th><th>パ</th><th>並替</th></tr></thead>
+                        <tbody id="team-setup-tbody"></tbody>
+                    </table>
+                </div>
+                <div>
+                    <h4>ベンチ（投手4人・代打2人枠）</h4>
+                    <table>
+                        <thead><tr><th>種</th><th>名前</th><th>ミ/球</th><th>パ/制</th></tr></thead>
+                        <tbody id="team-bench-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="json-area">
+            <button class="btn-sm" onclick="exportData()">データをJSONとしてコピー出力</button>
+            <button class="btn-sm btn-secondary" onclick="importData()">JSONデータから読み込み</button>
+            <textarea id="json-io" placeholder="ここにJSONデータを貼り付けて読み込むこともできます"></textarea>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; display: flex; justify-content: center; gap: 20px;">
+            <button id="to-game-btn">① 1試合プレイモード (チーム1 vs チーム2) ➔</button>
+            <button id="to-league-btn" class="btn-purple">② リーグ戦モードを開始！ ➔</button>
+        </div>
+    </div>
+
+    <div id="screen-league" class="box hidden">
+        <h2>🏆 リーグ戦モード</h2>
+        <div class="info-box" id="league-progress-info" style="margin-bottom: 15px; background: #8e44ad;">第1節</div>
+        
+        <div class="league-layout">
+            <div>
+                <h3>【現在の順位表】</h3>
+                <table>
+                    <thead>
+                        <tr><th>順位</th><th>チーム名</th><th>試合</th><th>勝</th><th>敗</th><th>分</th><th>勝率</th></tr>
+                    </thead>
+                    <tbody id="league-standings-tbody"></tbody>
+                </table>
+                
+                <h3 style="margin-top:20px;">【日程・対戦カード】</h3>
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #444;">
+                    <table id="league-matches-table" style="margin-bottom:0;"></table>
+                </div>
+            </div>
+            <div>
+                <h3>【リーグ戦速報】</h3>
+                <div id="league-log" class="league-log-box"></div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+            <button id="league-next-btn" class="btn-purple">次の試合を進行する ➔</button>
+            <button id="league-instant-btn" class="btn-red">💥 リーグ結果を即座に表示</button>
+            <button id="league-exit-btn" class="btn-secondary">リーグ戦を終了して戻る</button>
+        </div>
+    </div>
+
+    <div id="screen-game" class="box hidden">
+        <table class="scoreboard-table">
+            <thead><tr id="sb-header"></tr></thead>
+            <tbody>
+                <tr id="sb-home"></tr>
+                <tr id="sb-away"></tr>
+            </tbody>
+        </table>
+
+        <div class="game-layout">
+            <div class="team-display">
+                <h4 style="margin:5px; text-align:center;" id="game-home-title">ホーム</h4>
+                <table>
+                    <thead><tr><th>打</th><th>名前</th></tr></thead>
+                    <tbody id="home-live-roster"></tbody>
+                </table>
+                <div id="home-live-pitcher" style="font-size:12px; text-align:center; background:#111; padding:5px; border-radius:4px;"></div>
+                
+                <div class="bench-list" id="home-tactics">
+                    <strong>【ベンチメンバー】</strong>
+                    <div id="home-bench-actions" style="margin-top:5px;"></div>
+                </div>
+            </div>
+
+            <div class="center-panel">
+                <div class="info-box" id="match-info">1回表 攻撃中</div>
+                <div class="field-status">
+                    <div class="diamond">
+                        <div id="first-base" class="base"></div>
+                        <div id="second-base" class="base"></div>
+                        <div id="third-base" class="base"></div>
+                    </div>
+                    <div id="pitch-result-text" class="pitch-result-overlay">PLAY BALL</div>
+                    
+                    <div class="bso-container">
+                        <div class="bso-row"><span class="bso-label" style="color:#00ff00">B</span><span id="dots-b"></span></div>
+                        <div class="bso-row"><span class="bso-label" style="color:#ffcc00">S</span><span id="dots-s"></span></div>
+                        <div class="bso-row"><span class="bso-label" style="color:#ff0000">O</span><span id="dots-o"></span></div>
+                    </div>
+                </div>
+                <div id="game-log"></div>
+            </div>
+
+            <div class="team-display">
+                <h4 style="margin:5px; text-align:center;" id="game-away-title">ビジター</h4>
+                <table>
+                    <thead><tr><th>打</th><th>名前</th></tr></thead>
+                    <tbody id="away-live-roster"></tbody>
+                </table>
+                <div id="away-live-pitcher" style="font-size:12px; text-align:center; background:#111; padding:5px; border-radius:4px;"></div>
+                
+                <div class="bench-list" id="away-tactics">
+                    <strong>【ベンチメンバー】</strong>
+                    <div id="away-bench-actions" style="margin-top:5px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="next-pitch-btn">1球すすめる</button>
+            <button id="skip-to-6-btn" class="btn-orange">6回まで飛ばす</button>
+            <button id="skip-to-7-btn" class="btn-orange">7回まで飛ばす</button>
+            <button id="auto-game-btn" class="btn-secondary">一気に結果を見る</button>
+            <button id="back-to-setup-btn" class="btn-secondary hidden">チーム編集に戻る</button>
+            <button id="back-to-league-btn" class="btn-purple hidden">リーグ戦画面に戻る ➔</button>
+        </div>
+
+        <div id="stats-container" class="stats-section hidden">
+            <h3>【個人成績表】</h3>
+            <div class="setup-layout">
+                <div>
+                    <h4 id="stats-home-title">ホーム 打撃成績</h4>
+                    <table id="home-batter-stats"></table>
+                    <h4>投手成績</h4>
+                    <table id="home-pitcher-stats"></table>
+                </div>
+                <div>
+                    <h4 id="stats-away-title">ビジター 打撃成績</h4>
+                    <table id="away-batter-stats"></table>
+                    <h4>投手成績</h4>
+                    <table id="away-pitcher-stats"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
